@@ -1,0 +1,50 @@
+
+version: '2'
+services:
+  ros-master:
+    build: .
+    container_name: ros-master
+    ports:
+      - "11311:11311"
+    command:
+      - roscore
+
+  ros-aria:
+    build: .
+    depends_on:
+      - mobilesim
+    container_name: ros-aria
+    environment:
+      - "ROS_HOSTNAME=listener"
+      - "ROS_MASTER_URI=http://ros-master:11311"
+    command:
+      - rosrun rosaria RosAria _port:=http://mobilesim:8101
+
+  mobilesim:
+    build: .
+    depends_on:
+      - novnc
+    container_name: mobilesim
+    environment:
+      - DISPLAY=novnc:0.0
+    command:
+      - MobileSim
+    ports:
+      - "8101:8101"
+    networks:
+      - x11
+
+  novnc:  
+    image: theasp/novnc:latest
+    environment:
+      # Adjust to your screen size
+      - DISPLAY_WIDTH=1600
+      - DISPLAY_HEIGHT=968
+    ports:
+      - "8080:8080"
+    networks:
+      - x11
+
+networks:
+  x11:
+            
