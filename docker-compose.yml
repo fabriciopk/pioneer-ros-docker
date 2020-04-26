@@ -3,11 +3,29 @@ version: '2'
 services:
   ros-master:
     build: .
+    hostname: ros-master
     container_name: ros-master
     ports:
       - "11311:11311"
     command:
       - roscore
+    networks:
+      - x11
+
+  mobilesim:
+    build: .
+    depends_on:
+      - novnc
+    container_name: mobilesim
+    hostname: mobilesim
+    environment:
+      - DISPLAY=novnc:0.0
+    command:
+      - MobileSim
+    ports:
+      - "8101:8101"
+    networks:
+      - x11
 
   ros-aria:
     build: .
@@ -15,22 +33,8 @@ services:
       - mobilesim
     container_name: ros-aria
     environment:
-      - "ROS_HOSTNAME=listener"
       - "ROS_MASTER_URI=http://ros-master:11311"
-    command:
-      - rosrun rosaria RosAria _port:=http://mobilesim:8101
-
-  mobilesim:
-    build: .
-    depends_on:
-      - novnc
-    container_name: mobilesim
-    environment:
-      - DISPLAY=novnc:0.0
-    command:
-      - MobileSim
-    ports:
-      - "8101:8101"
+    command: rosrun rosaria RosAria _port:=mobilesim:8101
     networks:
       - x11
 
@@ -47,4 +51,3 @@ services:
 
 networks:
   x11:
-            
