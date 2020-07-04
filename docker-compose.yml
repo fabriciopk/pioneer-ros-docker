@@ -10,6 +10,7 @@ services:
       - roscore
     networks:
       - x11
+      - my-network
 
   mobilesim:
     build: .
@@ -25,17 +26,25 @@ services:
       - "8101:8101"
     networks:
       - x11
-
-  ros-aria:
+      - my-network
+  
+  ros-entrypoint:
     build: .
-    depends_on:
-      - mobilesim
-    container_name: ros-aria
+    container_name: ros-entrypoint
+    volumes:
+      - "./robot-client:/catkin_ws/src/robot-client:rw"
     environment:
-      - "ROS_MASTER_URI=http://ros-master:11311"
-    command: rosrun rosaria RosAria _port:=mobilesim:8101
+      - ROS_HOSTNAME=ros-entrypoint
+      - ROS_MASTER_URI=http://ros-master:11311
+      - DISPLAY=novnc:0.0
+    depends_on:
+      - ros-master 
+      - novnc
+    command:
+      - xterm
     networks:
       - x11
+      - my-network
 
   novnc:  
     image: theasp/novnc:latest
@@ -50,3 +59,5 @@ services:
 
 networks:
   x11:
+  my-network:
+    driver: bridge
