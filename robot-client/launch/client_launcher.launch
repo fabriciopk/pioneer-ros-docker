@@ -1,6 +1,7 @@
 <launch>
 	<node pkg = "rosaria" type = "RosAria" name = "RosAria">
-		<param name="port" value="/dev/ttyUSB0" type="string"/>
+		<!-- <param name="port" value="/dev/ttyUSB0" type="string"/> -->
+		<param name="port" value="mobilesim:8101" type="string"/>
 	</node>
-	<node pkg="client" type="interface" name="RosAria_interface" output="screen"/>
+	<node pkg="robot-client" type="autonomous_drive" name="Pioner_3dx_autonomous_drive" output="screen"/>
 </launch>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(client)
+project(robot-client)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,16 +8,32 @@ project(client)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  rosaria
   roscpp
   rospy
   std_msgs
+  geometry_msgs
+  rosaria
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+# find_package(Boost REQUIRED COMPONENTS system thread)
 
+### Make Arial library avaliable to ros node
+find_package(Aria QUIET)
+if(Aria_FOUND)
+	if(EXISTS "${Aria_INCLUDE_DIRS}/Aria.h")
+		add_definitions(-DADEPT_PKG)
+	endif()
+  include_directories(${Aria_INCLUDE_DIRS})
+  link_directories(${Aria_LIBRARY_DIRS})
+else()
+	# The installation package provided by Adept doesn't follow Debian policies
+	if(EXISTS "/usr/local/Aria/include/Aria.h")
+	  add_definitions(-DADEPT_PKG)
+	  include_directories( /usr/local/Aria/include)
+	  link_directories(/usr/local/Aria/lib)
+	endif()
+endif()
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -118,14 +134,17 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/client.cpp
-# )
+#add_library(${PROJECT_NAME}
+#   src/${PROJECT_NAME}/autonomous_drive.cpp
+#)
+
+add_executable(autonomous_drive src/autonomous_drive.cpp)
+
+target_link_libraries(autonomous_drive ${catkin_LIBRARIES} ${Boost_LIBRARIES} Aria pthread dl rt)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
